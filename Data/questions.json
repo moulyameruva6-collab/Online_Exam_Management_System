@@ -1,0 +1,263 @@
+[
+  {
+    "exam_id": "EX101",
+    "question_id": 1,
+    "question": "Which keyword is used to define a function in Python?",
+    "options": {
+      "A": "function",
+      "B": "def",
+      "C": "define",
+      "D": "fun"
+    },
+    "answer": "B",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 2,
+    "question": "Which data type is used to store multiple values in Python?",
+    "options": {
+      "A": "List",
+      "B": "Integer",
+      "C": "Boolean",
+      "D": "Float"
+    },
+    "answer": "A",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 3,
+    "question": "Which symbol is used for comments in Python?",
+    "options": {
+      "A": "//",
+      "B": "/*",
+      "C": "#",
+      "D": "<!--"
+    },
+    "answer": "C",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 4,
+    "question": "Which function is used to display output in Python?",
+    "options": {
+      "A": "display()",
+      "B": "show()",
+      "C": "print()",
+      "D": "output()"
+    },
+    "answer": "C",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 5,
+    "question": "Which of the following is a valid Python data type?",
+    "options": {
+      "A": "String",
+      "B": "Character",
+      "C": "Double",
+      "D": "Byte"
+    },
+    "answer": "A",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 6,
+    "question": "Which operator is used for exponentiation in Python?",
+    "options": {
+      "A": "^",
+      "B": "**",
+      "C": "//",
+      "D": "%%"
+    },
+    "answer": "B",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 7,
+    "question": "Which keyword is used to create a loop over a sequence?",
+    "options": {
+      "A": "loop",
+      "B": "repeat",
+      "C": "for",
+      "D": "iterate"
+    },
+    "answer": "C",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 8,
+    "question": "Which collection stores data in key-value pairs?",
+    "options": {
+      "A": "List",
+      "B": "Tuple",
+      "C": "Set",
+      "D": "Dictionary"
+    },
+    "answer": "D",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 9,
+    "question": "Which keyword is used to define a class in Python?",
+    "options": {
+      "A": "class",
+      "B": "define",
+      "C": "object",
+      "D": "structure"
+    },
+    "answer": "A",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX101",
+    "question_id": 10,
+    "question": "Which function is used to get input from the user?",
+    "options": {
+      "A": "get()",
+      "B": "input()",
+      "C": "read()",
+      "D": "scan()"
+    },
+    "answer": "B",
+    "marks": 1
+  },
+
+  {
+    "exam_id": "EX102",
+    "question_id": 11,
+    "question": "What is the main purpose of a class in Python?",
+    "options": {
+      "A": "Create objects",
+      "B": "Delete variables",
+      "C": "Print output",
+      "D": "Handle errors"
+    },
+    "answer": "A",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 12,
+    "question": "Which method is called automatically when an object is created?",
+    "options": {
+      "A": "start()",
+      "B": "main()",
+      "C": "__init__()",
+      "D": "create()"
+    },
+    "answer": "C",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 13,
+    "question": "Which concept allows a child class to acquire properties of a parent class?",
+    "options": {
+      "A": "Encapsulation",
+      "B": "Inheritance",
+      "C": "Abstraction",
+      "D": "Polymorphism"
+    },
+    "answer": "B",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 14,
+    "question": "Which concept means hiding internal implementation details?",
+    "options": {
+      "A": "Inheritance",
+      "B": "Polymorphism",
+      "C": "Abstraction",
+      "D": "Compilation"
+    },
+    "answer": "C",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 15,
+    "question": "Which concept allows the same method name to behave differently?",
+    "options": {
+      "A": "Polymorphism",
+      "B": "Inheritance",
+      "C": "Encapsulation",
+      "D": "Abstraction"
+    },
+    "answer": "A",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 16,
+    "question": "Which symbol is used to access an object attribute?",
+    "options": {
+      "A": "#",
+      "B": ".",
+      "C": "@",
+      "D": "$"
+    },
+    "answer": "B",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 17,
+    "question": "How is inheritance implemented in Python?",
+    "options": {
+      "A": "class Child extends Parent",
+      "B": "inherit Child Parent",
+      "C": "class Child(Parent)",
+      "D": "Child inherits Parent"
+    },
+    "answer": "C",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 18,
+    "question": "Which naming convention is commonly used for a private attribute in Python?",
+    "options": {
+      "A": "_",
+      "B": "__",
+      "C": "##",
+      "D": "@"
+    },
+    "answer": "B",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 19,
+    "question": "What is an object in Python?",
+    "options": {
+      "A": "Instance of a class",
+      "B": "A function only",
+      "C": "A variable type",
+      "D": "A module"
+    },
+    "answer": "A",
+    "marks": 1
+  },
+  {
+    "exam_id": "EX102",
+    "question_id": 20,
+    "question": "Which OOP concept combines data and methods into a single unit?",
+    "options": {
+      "A": "Inheritance",
+      "B": "Polymorphism",
+      "C": "Encapsulation",
+      "D": "Iteration"
+    },
+    "answer": "C",
+    "marks": 1
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "exam_id": "EX101",
+    "exam_name": "Python Basics",
+    "duration": 30,
+    "total_marks": 10
+  },
+  {
+    "exam_id": "EX102",
+    "exam_name": "Python OOP",
+    "duration": 20,
+    "total_marks": 10
+  }
+]
