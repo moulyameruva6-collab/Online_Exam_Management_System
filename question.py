@@ -5,51 +5,51 @@ def add_question():
     questions = load_data("data/questions.json")
     exams = load_data("data/exams.json")
 
-    # Exam name
-    exam_name = input("Enter exam name: ")
-
-    # Check whether exam exists
-    exam_found = False
-
-    for exam in exams:
-        if exam["exam_name"].lower() == exam_name.strip().lower():
-            exam_found = True
-            break
-
-    if not exam_found:
-        print("Invalid exam name")
+    if not exams:
+        print("No exams available")
         return
 
-    # Question
+    print("\n--- Exams ---")
+    for i, exam in enumerate(exams, 1):
+        print(i, exam["exam_id"], "-", exam["exam_name"])
+
+    try:
+        number = int(input("Enter exam number: "))
+        exam = exams[number - 1]
+    except (ValueError, IndexError):
+        print("Invalid exam number")
+        return
+
     question = input("Enter question: ")
+    a = input("Enter option A: ")
+    b = input("Enter option B: ")
+    c = input("Enter option C: ")
+    d = input("Enter option D: ")
 
-    # Options
-    option_a = input("Enter option A: ")
-    option_b = input("Enter option B: ")
-    option_c = input("Enter option C: ")
-    option_d = input("Enter option D: ")
-
-    # Correct answer validation
     while True:
         answer = input("Enter correct answer (A/B/C/D): ").upper()
-
         if answer in ["A", "B", "C", "D"]:
             break
+        print("Enter A, B, C or D")
 
-        print("Please enter A, B, C or D")
+    question_id = 1
+    if questions:
+        question_id = max(q["question_id"] for q in questions) + 1
 
-    # Create question
     new_question = {
-        "exam_name": exam_name.strip(),
+        "exam_id": exam["exam_id"],
+        "question_id": question_id,
         "question": question,
-        "A": option_a,
-        "B": option_b,
-        "C": option_c,
-        "D": option_d,
-        "answer": answer
+        "options": {
+            "A": a,
+            "B": b,
+            "C": c,
+            "D": d
+        },
+        "answer": answer,
+        "marks": 1
     }
 
-    # Save question
     questions.append(new_question)
     save_data("data/questions.json", questions)
 
@@ -59,45 +59,39 @@ def add_question():
 def view_questions():
     questions = load_data("data/questions.json")
 
-    if len(questions) == 0:
+    if not questions:
         print("No questions available")
-    else:
+        return
 
-        for i, q in enumerate(questions):
+    for i, q in enumerate(questions, 1):
+        print("\nQuestion No:", i)
+        print("Exam ID:", q["exam_id"])
+        print("Question:", q["question"])
 
-            print("\nQuestion No:", i + 1)
-            print("Exam:", q["exam_name"])
-            print("Question:", q["question"])
-            print("A.", q["A"])
-            print("B.", q["B"])
-            print("C.", q["C"])
-            print("D.", q["D"])
+        for option, value in q["options"].items():
+            print(option + ".", value)
+
+        print("Answer:", q["answer"])
 
 
 def delete_question():
     questions = load_data("data/questions.json")
 
-    if len(questions) == 0:
+    if not questions:
         print("No questions available")
         return
 
     view_questions()
 
-    # Question number validation
     try:
         number = int(input("\nEnter question number to delete: "))
     except ValueError:
         print("Please enter a number")
         return
 
-    # Check question number
-    if number >= 1 and number <= len(questions):
-
+    if 1 <= number <= len(questions):
         questions.pop(number - 1)
-
         save_data("data/questions.json", questions)
-
         print("Question deleted successfully!")
-
     else:
         print("Invalid question number")
