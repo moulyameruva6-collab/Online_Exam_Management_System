@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Divya",
+        "username": "divya",
+        "password": "333",
+        "role": "teacher",
+        "subject": "python"
+    },
+    {
+        "name": "Ganesh",
+        "username": "ganesh",
+        "password": "1212",
+        "role": "teacher",
+        "subject": "sql"
+    },
+    {
+        "name": "Ravi",
+        "username": "ravi",
+        "password": "1010",
+        "role": "teacher",
+        "subject": "Aptitude"
+    }
+]

@@ -1,14 +1,35 @@
 [
-  {
-    "exam_id": "EX101",
-    "exam_name": "Python Basics",
-    "duration": 30,
-    "total_marks": 10
-  },
-  {
-    "exam_id": "EX102",
-    "exam_name": "Python OOP",
-    "duration": 20,
-    "total_marks": 10
-  }
+  
+    {
+        "exam_id": "EX101",
+        "exam_name": "Python Basics",
+        "subject": "Python",
+        "teacher": "divya",
+        "duration": 30,
+        "total_marks": 10,
+        "passing_percentage": 40,
+        "status": "Active"
+    },
+    {
+        "exam_id": "EX102",
+        "exam_name": "python oops",
+        "subject": "python",
+        "teacher": "Ganesh",
+        "duration": 20,
+        "total_marks": 11,
+        "passing_percentage": 35.0,
+        "status": "Active"
+    },
+    {
+        "exam_id": "EX103",
+        "exam_name": "aptitude basics",
+        "subject": "aptitude",
+        "teacher": "Ravi",
+        "duration": 25,
+        "total_marks": 5,
+        "passing_percentage": 40,
+        "status": "Active"
+    }
+    
+
 ]

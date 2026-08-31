@@ -1,7 +1,53 @@
 [
-  {
-    "username": "Swathi",
-    "password": "1234",
-    "role": "student"
-  }
+    {
+        "name": "Swathi",
+        "username": "Swathi",
+        "password": "1234",
+        "role": "student"
+    },
+    {
+        "name": "Moulya",
+        "username": "moulya",
+        "password": "123",
+        "role": "student"
+    },
+    {
+        "name": "Divya",
+        "username": "divya",
+        "password": "333",
+        "role": "teacher",
+        "subject": "python"
+    },
+    {
+        "name": "Chandu",
+        "username": "chandu",
+        "password": "111",
+        "role": "student"
+    },
+    {
+        "name": "Charan",
+        "username": "charan",
+        "password": "222",
+        "role": "student"
+    },
+    {
+        "name": "Ram",
+        "username": "ram",
+        "password": "4321",
+        "role": "student"
+    },
+    {
+        "name": "Ganesh",
+        "username": "ganesh",
+        "password": "1212",
+        "role": "teacher",
+        "subject": "sql"
+    },
+    {
+        "name": "Ravi",
+        "username": "ravi",
+        "password": "1010",
+        "role": "teacher",
+        "subject": "Aptitude"
+    }
 ]

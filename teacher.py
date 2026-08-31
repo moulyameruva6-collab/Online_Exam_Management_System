@@ -65,27 +65,31 @@ def teacher_menu(user):
 
 def my_exams(user):
     exams = load_data("data/exams.json")
-    return [e for e in exams
-            if e.get("teacher", "").lower() == user["name"].lower()]
+
+    return [
+        exam for exam in exams
+        if exam.get("teacher", "").lower() == user["name"].lower()
+    ]
 
 
 def add_exam(user):
     exams = load_data("data/exams.json")
 
     subject = user.get("subject")
+
     if not subject:
         print("No subject assigned")
         return
 
     name = input("Enter exam name: ").strip()
-    sub = input("Enter subject: ").strip()
+    exam_subject = input("Enter subject: ").strip()
 
-    if sub.lower() != subject.lower():
+    if exam_subject.lower() != subject.lower():
         print("Wrong subject")
         return
 
-    for e in exams:
-        if e["exam_name"].lower() == name.lower():
+    for exam in exams:
+        if exam["exam_name"].lower() == name.lower():
             print("Exam already exists!")
             return
 
@@ -95,12 +99,12 @@ def add_exam(user):
         print("Enter a valid number")
         return
 
-    exam_id = "EX" + str(100 + len(exams) + 1)
+    exam_id = "EX" + str(101 + len(exams))
 
     exams.append({
         "exam_id": exam_id,
         "exam_name": name,
-        "subject": sub,
+        "subject": exam_subject,
         "teacher": user["name"],
         "duration": duration,
         "total_marks": 0,
@@ -121,13 +125,13 @@ def view_exams(user):
         print("No exams available")
         return
 
-    for e in exams:
-        print("\nExam:", e["exam_name"])
-        print("ID:", e["exam_id"])
-        print("Subject:", e.get("subject", ""))
-        print("Duration:", e.get("duration", 0), "minutes")
-        print("Passing:", e.get("passing_percentage", 40), "%")
-        print("Status:", e.get("status", "Active"))
+    for exam in exams:
+        print("\nExam:", exam["exam_name"])
+        print("ID:", exam["exam_id"])
+        print("Subject:", exam.get("subject", ""))
+        print("Duration:", exam.get("duration", 0), "minutes")
+        print("Passing:", exam.get("passing_percentage", 40), "%")
+        print("Status:", exam.get("status", "Active"))
 
 
 def update_question():
@@ -140,23 +144,25 @@ def update_question():
     view_questions()
 
     try:
-        n = int(input("\nEnter question number to update: "))
-        q = questions[n - 1]
+        number = int(input("\nEnter question number to update: "))
+        question = questions[number - 1]
     except (ValueError, IndexError):
         print("Invalid question number")
         return
 
-    q["question"] = input("Enter new question: ")
-    q["options"]["A"] = input("Enter option A: ")
-    q["options"]["B"] = input("Enter option B: ")
-    q["options"]["C"] = input("Enter option C: ")
-    q["options"]["D"] = input("Enter option D: ")
+    question["question"] = input("Enter new question: ")
+    question["options"]["A"] = input("Enter option A: ")
+    question["options"]["B"] = input("Enter option B: ")
+    question["options"]["C"] = input("Enter option C: ")
+    question["options"]["D"] = input("Enter option D: ")
 
     while True:
-        ans = input("Enter correct answer (A/B/C/D): ").upper()
-        if ans in "ABCD":
-            q["answer"] = ans
+        answer = input("Enter correct answer (A/B/C/D): ").upper()
+
+        if answer in ["A", "B", "C", "D"]:
+            question["answer"] = answer
             break
+
         print("Enter A, B, C or D")
 
     save_data("data/questions.json", questions)
@@ -171,17 +177,19 @@ def delete_exam(user):
         print("No exams available")
         return
 
-    for i, e in enumerate(mine, 1):
-        print(i, e["exam_name"])
+    for i, exam in enumerate(mine, 1):
+        print(i, exam["exam_name"])
 
     try:
-        n = int(input("Enter exam number to delete: "))
-        exam = mine[n - 1]
+        number = int(input("Enter exam number to delete: "))
+        exam = mine[number - 1]
     except (ValueError, IndexError):
         print("Invalid exam number")
         return
 
-    if input("Are you sure? (yes/no): ").lower() != "yes":
+    confirm = input("Are you sure? (yes/no): ").lower()
+
+    if confirm != "yes":
         print("Delete cancelled")
         return
 
@@ -189,7 +197,11 @@ def delete_exam(user):
     save_data("data/exams.json", exams)
 
     questions = load_data("data/questions.json")
-    questions = [q for q in questions if q["exam_id"] != exam["exam_id"]]
+    questions = [
+        q for q in questions
+        if q["exam_id"] != exam["exam_id"]
+    ]
+
     save_data("data/questions.json", questions)
 
     print("Exam deleted successfully!")
@@ -197,17 +209,24 @@ def delete_exam(user):
 
 def view_results(user):
     results = load_data("data/results.json")
-    mine = [e["exam_id"] for e in my_exams(user)]
+    exam_ids = [exam["exam_id"] for exam in my_exams(user)]
 
     print("\n--- Exam Results ---")
+
     found = False
 
-    for r in results:
-        if r.get("exam_id") in mine:
-            print("Student:", r.get("student"))
-            print("Score:", r.get("score"), "/", r.get("total_marks"))
-            print("Percentage:", r.get("percentage"), "%")
+    for result in results:
+        if result.get("exam_id") in exam_ids:
+            print("Student:", result.get("student"))
+            print(
+                "Score:",
+                result.get("score"),
+                "/",
+                result.get("total_marks")
+            )
+            print("Percentage:", result.get("percentage"), "%")
             print()
+
             found = True
 
     if not found:
@@ -222,12 +241,12 @@ def update_exam(user):
         print("No exams available")
         return
 
-    for i, e in enumerate(mine, 1):
-        print(i, e["exam_name"])
+    for i, exam in enumerate(mine, 1):
+        print(i, exam["exam_name"])
 
     try:
-        n = int(input("Enter exam number: "))
-        exam = mine[n - 1]
+        number = int(input("Enter exam number: "))
+        exam = mine[number - 1]
     except (ValueError, IndexError):
         print("Invalid exam number")
         return
@@ -235,7 +254,9 @@ def update_exam(user):
     exam["exam_name"] = input("Enter new exam name: ").strip()
 
     try:
-        exam["duration"] = int(input("Enter new duration: "))
+        exam["duration"] = int(
+            input("Enter new duration: ")
+        )
     except ValueError:
         print("Invalid duration")
         return
@@ -245,34 +266,37 @@ def update_exam(user):
 
 
 def view_exam_questions(user):
-    mine = my_exams(user)
+    exams = my_exams(user)
     questions = load_data("data/questions.json")
 
-    if not mine:
+    if not exams:
         print("No exams available")
         return
 
-    for i, e in enumerate(mine, 1):
-        print(i, e["exam_name"])
+    for i, exam in enumerate(exams, 1):
+        print(i, exam["exam_name"])
 
     try:
-        n = int(input("Enter exam number: "))
-        exam_id = mine[n - 1]["exam_id"]
+        number = int(input("Enter exam number: "))
+        exam_id = exams[number - 1]["exam_id"]
     except (ValueError, IndexError):
         print("Invalid exam number")
         return
 
-    found = 0
+    found = False
+
     print("\n--- Exam Questions ---")
 
-    for q in questions:
-        if q["exam_id"] == exam_id:
-            print("\nQuestion:", q["question"])
-            for key, value in q["options"].items():
-                print(key + ".", value)
-            found += 1
+    for question in questions:
+        if question["exam_id"] == exam_id:
+            print("\nQuestion:", question["question"])
 
-    if found == 0:
+            for key, value in question["options"].items():
+                print(key + ".", value)
+
+            found = True
+
+    if not found:
         print("No questions available")
 
 
@@ -281,27 +305,39 @@ def question_count(user):
 
     print("\n--- Question Count ---")
 
-    for e in my_exams(user):
-        count = sum(q["exam_id"] == e["exam_id"] for q in questions)
-        print(e["exam_name"], "->", count, "questions")
+    for exam in my_exams(user):
+        count = sum(
+            q["exam_id"] == exam["exam_id"]
+            for q in questions
+        )
+
+        print(exam["exam_name"], "->", count, "questions")
 
 
 def search_question(user):
     questions = load_data("data/questions.json")
-    exams = {e["exam_id"]: e["exam_name"] for e in my_exams(user)}
+    exams = {
+        exam["exam_id"]: exam["exam_name"]
+        for exam in my_exams(user)
+    }
 
     word = input("Enter keyword to search: ").lower()
+
     found = False
 
     print("\n--- Search Results ---")
 
-    for q in questions:
-        if q["exam_id"] in exams and word in q["question"].lower():
-            print("\nExam:", exams[q["exam_id"]])
-            print("Question:", q["question"])
-            for key, value in q["options"].items():
-                print(key + ".", value)
-            found = True
+    for question in questions:
+        if question["exam_id"] in exams:
+            if word in question["question"].lower():
+
+                print("\nExam:", exams[question["exam_id"]])
+                print("Question:", question["question"])
+
+                for key, value in question["options"].items():
+                    print(key + ".", value)
+
+                found = True
 
     if not found:
         print("No matching questions found")
@@ -309,16 +345,25 @@ def search_question(user):
 
 def student_performance(user):
     results = load_data("data/results.json")
-    mine = [e["exam_id"] for e in my_exams(user)]
+    exam_ids = [exam["exam_id"] for exam in my_exams(user)]
 
     print("\n--- Student Performance ---")
+
     found = False
 
-    for r in results:
-        if r.get("exam_id") in mine:
-            print(r.get("student"), "-", r.get("score"),
-                  "/", r.get("total_marks"),
-                  "-", r.get("percentage"), "%")
+    for result in results:
+        if result.get("exam_id") in exam_ids:
+            print(
+                result.get("student"),
+                "-",
+                result.get("score"),
+                "/",
+                result.get("total_marks"),
+                "-",
+                result.get("percentage"),
+                "%"
+            )
+
             found = True
 
     if not found:
@@ -333,21 +378,31 @@ def passing_percentage(user):
         print("No exams available")
         return
 
-    for i, e in enumerate(mine, 1):
-        print(i, e["exam_name"])
+    for i, exam in enumerate(mine, 1):
+        print(i, exam["exam_name"])
 
     try:
-        n = int(input("Enter exam number: "))
+        number = int(input("Enter exam number: "))
         value = float(input("Enter passing percentage: "))
     except ValueError:
         print("Invalid input")
         return
 
-    if not 1 <= n <= len(mine) or not 0 <= value <= 100:
-        print("Invalid input")
+    if not 1 <= number <= len(mine):
+        print("Invalid exam number")
         return
 
-    mine[n - 1]["passing_percentage"] = value
+    if not 0 <= value <= 100:
+        print("Percentage must be between 0 and 100")
+        return
+
+    exam_id = mine[number - 1]["exam_id"]
+
+    for exam in exams:
+        if exam["exam_id"] == exam_id:
+            exam["passing_percentage"] = value
+            break
+
     save_data("data/exams.json", exams)
 
     print("Passing percentage updated successfully!")
@@ -361,26 +416,39 @@ def exam_status(user):
         print("No exams available")
         return
 
-    for i, e in enumerate(mine, 1):
-        print(i, e["exam_name"], "-", e.get("status", "Active"))
+    for i, exam in enumerate(mine, 1):
+        print(
+            i,
+            exam["exam_name"],
+            "-",
+            exam.get("status", "Active")
+        )
 
     try:
-        n = int(input("Enter exam number: "))
+        number = int(input("Enter exam number: "))
     except ValueError:
         print("Invalid number")
         return
 
-    if not 1 <= n <= len(mine):
+    if not 1 <= number <= len(mine):
         print("Invalid exam number")
         return
 
-    status = input("Enter status (active/inactive): ").lower()
+    status = input(
+        "Enter status (active/inactive): "
+    ).lower()
 
     if status not in ["active", "inactive"]:
         print("Enter active or inactive")
         return
 
-    mine[n - 1]["status"] = status.capitalize()
+    exam_id = mine[number - 1]["exam_id"]
+
+    for exam in exams:
+        if exam["exam_id"] == exam_id:
+            exam["status"] = status.capitalize()
+            break
+
     save_data("data/exams.json", exams)
 
     print("Exam status updated successfully!")

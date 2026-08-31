@@ -1,10 +1,6 @@
 from database import load_data, save_data
 
 
-# ==================================
-# REGISTER
-# ==================================
-
 def register():
 
     print("\n--- Registration ---")
@@ -20,14 +16,11 @@ def register():
 
     users = load_data("data/users.json")
 
-    # Check username already exists
     for user in users:
-
-        if user["username"].strip().lower() == username.lower():
+        if user["username"].lower() == username.lower():
             print("Username already exists!")
             return
 
-    # Create user
     user = {
         "name": name,
         "username": username,
@@ -35,34 +28,16 @@ def register():
         "role": role
     }
 
-    # Save login details
     users.append(user)
-
-    save_data(
-        "data/users.json",
-        users
-    )
-
-    # ==================================
-    # SAVE STUDENT
-    # ==================================
+    save_data("data/users.json", users)
 
     if role == "student":
 
         students = load_data("data/students.json")
-
         students.append(user)
+        save_data("data/students.json", students)
 
-        save_data(
-            "data/students.json",
-            students
-        )
-
-    # ==================================
-    # SAVE TEACHER
-    # ==================================
-
-    elif role == "teacher":
+    else:
 
         teachers = load_data("data/teachers.json")
 
@@ -75,18 +50,10 @@ def register():
         }
 
         teachers.append(teacher)
-
-        save_data(
-            "data/teachers.json",
-            teachers
-        )
+        save_data("data/teachers.json", teachers)
 
     print("Registration successful!")
 
-
-# ==================================
-# LOGIN
-# ==================================
 
 def login():
 
@@ -95,12 +62,8 @@ def login():
     username = input("Enter username: ").strip()
     password = input("Enter password: ").strip()
 
-    # ==================================
-    # ADMIN LOGIN
-    # ==================================
-
+    # Admin login
     if username.lower() == "admin" and password == "admin123":
-
         print("Admin login successful!")
 
         return {
@@ -109,50 +72,25 @@ def login():
             "role": "admin"
         }
 
-    # ==================================
-    # USER LOGIN
-    # ==================================
-
     users = load_data("data/users.json")
 
     for user in users:
 
-        if (
-            user["username"].strip().lower()
-            == username.strip().lower()
-            and user["password"] == password
-        ):
+        if (user["username"].lower() == username.lower()
+                and user["password"] == password):
 
-            # ==================================
-            # TEACHER LOGIN
-            # ==================================
+            if user["role"] == "teacher":
 
-            if user["role"].strip().lower() == "teacher":
-
-                teachers = load_data(
-                    "data/teachers.json"
-                )
-
-                user["subject"] = ""
+                teachers = load_data("data/teachers.json")
 
                 for teacher in teachers:
 
-                    if (
-                        teacher["username"].strip().lower()
-                        == user["username"].strip().lower()
-                    ):
-
-                        user["subject"] = teacher.get(
-                            "subject",
-                            ""
-                        ).strip()
-
+                    if teacher["username"].lower() == username.lower():
+                        user["subject"] = teacher.get("subject", "")
                         break
 
             print("Login successful!")
-
             return user
 
     print("Invalid username or password")
-
     return None

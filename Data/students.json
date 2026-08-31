@@ -1,0 +1,32 @@
+[
+    {
+        "name": "Swathi",
+        "username": "Swathi",
+        "password": "1234",
+        "role": "student"
+    },
+    {
+        "name": "Moulya",
+        "username": "moulya",
+        "password": "123",
+        "role": "student"
+    },
+    {
+        "name": "Chandu",
+        "username": "chandu",
+        "password": "111",
+        "role": "student"
+    },
+    {
+        "name": "Charan",
+        "username": "charan",
+        "password": "222",
+        "role": "student"
+    },
+    {
+        "name": "Ram",
+        "username": "ram",
+        "password": "4321",
+        "role": "student"
+    }
+]

@@ -2,6 +2,7 @@ from database import load_data, save_data
 
 
 def admin_menu():
+
     while True:
 
         print("\n====================")
@@ -47,14 +48,13 @@ def view_students():
 
     students = load_data("data/students.json")
 
-    if len(students) == 0:
+    if not students:
         print("\nNo students available")
         return
 
     print("\n--- Students ---")
 
     for student in students:
-
         print("Name:", student["name"])
         print("Username:", student["username"])
         print()
@@ -68,22 +68,16 @@ def view_teachers():
 
     teachers = load_data("data/teachers.json")
 
-    if len(teachers) == 0:
+    if not teachers:
         print("\nNo teachers available")
         return
 
     print("\n--- Teachers ---")
 
     for teacher in teachers:
-
         print("Name:", teacher["name"])
         print("Username:", teacher["username"])
-
-        if "subject" in teacher:
-            print("Subject:", teacher["subject"])
-        else:
-            print("Subject: Not Assigned")
-
+        print("Subject:", teacher.get("subject", ""))
         print()
 
 
@@ -95,7 +89,7 @@ def view_exams():
 
     exams = load_data("data/exams.json")
 
-    if len(exams) == 0:
+    if not exams:
         print("\nNo exams available")
         return
 
@@ -104,12 +98,10 @@ def view_exams():
     for exam in exams:
 
         print("Exam:", exam["exam_name"])
-        print("Subject:", exam["subject"])
-        print("Teacher:", exam["teacher"])
-
-        if "duration" in exam:
-            print("Duration:", exam["duration"], "minutes")
-
+        print("Exam ID:", exam["exam_id"])
+        print("Subject:", exam.get("subject", ""))
+        print("Teacher:", exam.get("teacher", ""))
+        print("Duration:", exam.get("duration", 0), "minutes")
         print()
 
 
@@ -121,21 +113,18 @@ def view_results():
 
     results = load_data("data/results.json")
 
-    if len(results) == 0:
+    if not results:
         print("\nNo results available")
         return
 
     print("\n--- Results ---")
 
     for result in results:
-
-        print("Student:", result["student"])
-        print("Exam:", result["exam"])
-        print("Score:", result["score"], "/", result["total"])
-        print("Percentage:", result["percentage"], "%")
-        print("Result:", result["result"])
+        print("Student:", result.get("username", result.get("student", "Unknown")))
+        print("Exam ID:", result.get("exam_id", ""))
+        print("Score:", result.get("score", 0), "/", result.get("total_marks", 0))
+        print("Percentage:", result.get("percentage", 0), "%")
         print()
-
 
 # ==================================
 # ASSIGN SUBJECT
@@ -144,71 +133,42 @@ def view_results():
 def assign_subject():
 
     teachers = load_data("data/teachers.json")
-    users = load_data("data/users.json")
 
-    if len(teachers) == 0:
+    if not teachers:
         print("\nNo teachers available")
         return
 
     print("\n--- Teachers ---")
 
-    for i, teacher in enumerate(teachers):
+    for i, teacher in enumerate(teachers, 1):
+        print(i, teacher["name"], "-", teacher.get("subject", ""))
 
-        subject = teacher.get("subject", "Not Assigned")
-
-        print(
-            i + 1,
-            teacher["name"],
-            "-",
-            subject
-        )
-
-    # Teacher number validation
     try:
         number = int(input("Enter teacher number: "))
-
-    except ValueError:
-        print("Please enter a number")
-        return
-
-    if number < 1 or number > len(teachers):
+        teacher = teachers[number - 1]
+    except (ValueError, IndexError):
         print("Invalid teacher number")
         return
 
     subject = input("Enter subject: ").strip()
 
-    if subject == "":
+    if not subject:
         print("Subject cannot be empty")
         return
 
-    selected_teacher = teachers[number - 1]
+    teacher["subject"] = subject
 
-    # ==================================
-    # UPDATE teachers.json
-    # ==================================
+    save_data("data/teachers.json", teachers)
 
-    selected_teacher["subject"] = subject
-
-    save_data(
-        "data/teachers.json",
-        teachers
-    )
-
-    # ==================================
-    # UPDATE users.json
-    # ==================================
+    # Update subject in users.json also
+    users = load_data("data/users.json")
 
     for user in users:
 
-        if user["username"] == selected_teacher["username"]:
-
+        if user["username"].lower() == teacher["username"].lower():
             user["subject"] = subject
-
             break
 
-    save_data(
-        "data/users.json",
-        users
-    )
+    save_data("data/users.json", users)
 
     print("Subject assigned successfully!")
