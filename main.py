@@ -18,6 +18,7 @@ def main():
         choice = input("Enter your choice: ")
 
         if choice == "1":
+
             register()
 
         elif choice == "2":
@@ -27,23 +28,31 @@ def main():
             if user:
 
                 if user["role"] == "admin":
+
                     print("\nWelcome Admin")
                     admin_menu()
 
                 elif user["role"] == "teacher":
+
                     print("\nWelcome", user["name"])
                     teacher_menu(user)
 
                 elif user["role"] == "student":
+
                     print("\nWelcome", user["name"])
                     student_menu(user)
 
         elif choice == "3":
+
             print("\nThank you!")
             break
 
         else:
+
             print("Invalid choice")
 
 
-main()
+if __name__ == "__main__":
+    main()
+
+

@@ -41,13 +41,33 @@
         "username": "ganesh",
         "password": "1212",
         "role": "teacher",
-        "subject": "sql"
+        "subject": "python"
     },
     {
         "name": "Ravi",
         "username": "ravi",
         "password": "1010",
         "role": "teacher",
-        "subject": "Aptitude"
+        "subject": "sql"
+    },
+    {
+        "name": "Harika",
+        "username": "harika",
+        "password": "0000",
+        "role": "student"
+    },
+    {
+        "name": "Sweety",
+        "username": "sweety",
+        "password": "9999",
+        "role": "teacher",
+        "subject": "Python Concepts"
+    },
+    {
+        "name": "usha",
+        "username": "Usha",
+        "password": "3434",
+        "role": "teacher",
+        "subject": "sql"
     }
 ]

@@ -28,5 +28,11 @@
         "username": "ram",
         "password": "4321",
         "role": "student"
+    },
+    {
+        "name": "Harika",
+        "username": "harika",
+        "password": "0000",
+        "role": "student"
     }
 ]

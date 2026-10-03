@@ -336,5 +336,31 @@
         },
         "answer": "B",
         "marks": 1
+    },
+    {
+        "exam_id": "EX104",
+        "question_id": 27,
+        "question": "which one is data type?",
+        "options": {
+            "A": "list",
+            "B": "char",
+            "C": "length",
+            "D": "split"
+        },
+        "answer": "A",
+        "marks": 1
+    },
+    {
+        "exam_id": "EX104",
+        "question_id": 28,
+        "question": "In this which one is data structure?",
+        "options": {
+            "A": "list",
+            "B": "tuple",
+            "C": "int ",
+            "D": "A & B"
+        },
+        "answer": "D",
+        "marks": 1
     }
 ]

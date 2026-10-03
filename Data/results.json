@@ -33,5 +33,54 @@
         "score": 7,
         "total_marks": 11,
         "percentage": 63.64
+    },
+    {
+        "student": "Swathi",
+        "exam_id": "EX101",
+        "score": 8,
+        "total_marks": 10,
+        "percentage": 80.0
+    },
+    {
+        "student": "Swathi",
+        "exam_id": "EX103",
+        "score": 5,
+        "total_marks": 5,
+        "percentage": 100.0
+    },
+    {
+        "student": "Swathi",
+        "exam_id": "EX101",
+        "score": 8,
+        "total_marks": 10,
+        "percentage": 80.0
+    },
+    {
+        "student": "Swathi",
+        "exam_id": "EX103",
+        "score": 4,
+        "total_marks": 5,
+        "percentage": 80.0
+    },
+    {
+        "student": "Harika",
+        "exam_id": "EX101",
+        "score": 6,
+        "total_marks": 10,
+        "percentage": 60.0
+    },
+    {
+        "student": "Swathi",
+        "exam_id": "EX102",
+        "score": 8,
+        "total_marks": 11,
+        "percentage": 72.73
+    },
+    {
+        "student": "Swathi",
+        "exam_id": "EX101",
+        "score": 7,
+        "total_marks": 10,
+        "percentage": 70.0
     }
 ]

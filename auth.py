@@ -1,4 +1,4 @@
-from database import load_data, save_data
+from database import execute_query, fetch_one
 
 
 def register():
@@ -14,43 +14,70 @@ def register():
         print("Invalid role")
         return
 
-    users = load_data("data/users.json")
+    # Check username
+    query = """
+        SELECT user_id
+        FROM users
+        WHERE LOWER(username) = LOWER(%s)
+    """
 
-    for user in users:
-        if user["username"].lower() == username.lower():
-            print("Username already exists!")
-            return
+    existing_user = fetch_one(query, (username,))
 
-    user = {
-        "name": name,
-        "username": username,
-        "password": password,
-        "role": role
-    }
+    if existing_user:
+        print("Username already exists!")
+        return
 
-    users.append(user)
-    save_data("data/users.json", users)
+    # Insert user
+    query = """
+        INSERT INTO users
+        (username, password, role)
+        VALUES (%s, %s, %s)
+    """
 
+    execute_query(
+        query,
+        (username, password, role)
+    )
+
+    # Get newly created user
+    user = fetch_one(
+        """
+        SELECT user_id
+        FROM users
+        WHERE LOWER(username) = LOWER(%s)
+        """,
+        (username,)
+    )
+
+    user_id = user[0]
+
+    # Add student
     if role == "student":
 
-        students = load_data("data/students.json")
-        students.append(user)
-        save_data("data/students.json", students)
+        query = """
+            INSERT INTO students
+            (user_id, student_name)
+            VALUES (%s, %s)
+        """
 
+        execute_query(
+            query,
+            (user_id, name)
+        )
+
+    # Add teacher
     else:
 
-        teachers = load_data("data/teachers.json")
+        query = """
+            INSERT INTO teachers
+            (user_id, teacher_name)
+            VALUES (%s, %s)
+        """
 
-        teacher = {
-            "name": name,
-            "username": username,
-            "password": password,
-            "role": role,
-            "subject": ""
-        }
-
-        teachers.append(teacher)
-        save_data("data/teachers.json", teachers)
+        execute_query(
+            query,
+            (user_id, name)
+        )
 
     print("Registration successful!")
 
@@ -64,6 +91,7 @@ def login():
 
     # Admin login
     if username.lower() == "admin" and password == "admin123":
+
         print("Admin login successful!")
 
         return {
@@ -72,25 +100,97 @@ def login():
             "role": "admin"
         }
 
-    users = load_data("data/users.json")
+    # Check user
+    query = """
+        SELECT
+            user_id,
+            username,
+            password,
+            role
+        FROM users
+        WHERE LOWER(username) = LOWER(%s)
+    """
 
-    for user in users:
+    user = fetch_one(query, (username,))
 
-        if (user["username"].lower() == username.lower()
-                and user["password"] == password):
+    if not user:
+        print("Invalid username or password")
+        return None
 
-            if user["role"] == "teacher":
+    if user[2] != password:
+        print("Invalid username or password")
+        return None
 
-                teachers = load_data("data/teachers.json")
+    user_id = user[0]
+    username = user[1]
+    role = user[3]
 
-                for teacher in teachers:
+    # Student login
+    if role == "student":
 
-                    if teacher["username"].lower() == username.lower():
-                        user["subject"] = teacher.get("subject", "")
-                        break
+        student = fetch_one(
+            """
+            SELECT student_name
+            FROM students
+            WHERE user_id = %s
+            """,
+            (user_id,)
+        )
 
-            print("Login successful!")
-            return user
+        name = student[0] if student else username
 
-    print("Invalid username or password")
+        print("Login successful!")
+
+        return {
+            "user_id": user_id,
+            "name": name,
+            "username": username,
+            "role": "student"
+        }
+
+    # Teacher login
+    if role == "teacher":
+
+        teacher = fetch_one(
+            """
+            SELECT
+                teacher_id,
+                teacher_name
+            FROM teachers
+            WHERE user_id = %s
+            """,
+            (user_id,)
+        )
+
+        if not teacher:
+            print("Teacher record not found")
+            return None
+
+        teacher_id = teacher[0]
+        name = teacher[1]
+
+        # Get teacher subject
+        subject = fetch_one(
+            """
+            SELECT subject_name
+            FROM subjects
+            WHERE teacher_id = %s
+            """,
+            (teacher_id,)
+        )
+
+        subject_name = subject[0] if subject else ""
+
+        print("Login successful!")
+
+        return {
+            "user_id": user_id,
+            "teacher_id": teacher_id,
+            "name": name,
+            "username": username,
+            "role": "teacher",
+            "subject": subject_name
+        }
+
+    print("Invalid role")
     return None

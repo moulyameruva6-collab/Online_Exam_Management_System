@@ -1,5 +1,4 @@
 [
-  
     {
         "exam_id": "EX101",
         "exam_name": "Python Basics",
@@ -7,7 +6,7 @@
         "teacher": "divya",
         "duration": 30,
         "total_marks": 10,
-        "passing_percentage": 40,
+        "passing_percentage": 35.0,
         "status": "Active"
     },
     {
@@ -17,7 +16,7 @@
         "teacher": "Ganesh",
         "duration": 20,
         "total_marks": 11,
-        "passing_percentage": 35.0,
+        "passing_percentage": 45.0,
         "status": "Active"
     },
     {
@@ -29,7 +28,35 @@
         "total_marks": 5,
         "passing_percentage": 40,
         "status": "Active"
+    },
+    {
+        "exam_id": "EX104",
+        "exam_name": "Python",
+        "subject": "Python Concepts",
+        "teacher": "Sweety",
+        "duration": 25,
+        "total_marks": 2,
+        "passing_percentage": 35.0,
+        "status": "Active"
+    },
+    {
+        "exam_id": "EX105",
+        "exam_name": "EX101",
+        "subject": "Sql",
+        "teacher": "usha",
+        "duration": 35,
+        "total_marks": 0,
+        "passing_percentage": 40,
+        "status": "Active"
+    },
+    {
+        "exam_id": "EX106",
+        "exam_name": "2",
+        "subject": "python",
+        "teacher": "Ganesh",
+        "duration": 35,
+        "total_marks": 0,
+        "passing_percentage": 40,
+        "status": "Active"
     }
-    
-
 ]

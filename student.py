@@ -1,5 +1,4 @@
-from database import load_data, save_data
-import time
+from database import fetch_all, fetch_one, execute_query
 
 
 class Student:
@@ -7,10 +6,34 @@ class Student:
     def __init__(self, username):
         self.username = username
 
+    def get_student_id(self):
+
+        student = fetch_one("""
+            SELECT s.student_id
+            FROM students s
+            JOIN users u
+            ON s.user_id = u.user_id
+            WHERE LOWER(u.username) = LOWER(%s)
+        """, (self.username,))
+
+        if student:
+            return student[0]
+
+        return None
+
     # 1. View Exams
     def view_exams(self):
 
-        exams = load_data("data/exams.json")
+        exams = fetch_all("""
+            SELECT
+                e.exam_id,
+                e.exam_name,
+                s.subject_name
+            FROM exams e
+            JOIN subjects s
+            ON e.subject_id = s.subject_id
+            ORDER BY e.exam_id
+        """)
 
         if not exams:
             print("\nNo exams available")
@@ -19,74 +42,83 @@ class Student:
         print("\n===== AVAILABLE EXAMS =====")
 
         for exam in exams:
-            print("Exam ID     :", exam["exam_id"])
-            print("Exam Name   :", exam["exam_name"])
-            print("Duration    :", exam["duration"], "minutes")
-            print("Total Marks :", exam["total_marks"])
+
+            question_count = fetch_one("""
+                SELECT COUNT(*)
+                FROM questions
+                WHERE exam_id = %s
+            """, (exam[0],))
+
+            total_questions = question_count[0]
+
+            print("Exam ID       :", exam[0])
+            print("Exam Name     :", exam[1])
+            print("Subject       :", exam[2])
+            print("Questions     :", total_questions)
+            print("Total Marks   :", total_questions)
             print("---------------------------")
 
     # 2. Attend Exam
     def attend_exam(self):
 
-        exams = load_data("data/exams.json")
-        questions = load_data("data/questions.json")
+        try:
+            exam_id = int(input("\nEnter Exam ID: "))
 
-        exam_id = input("\nEnter Exam ID: ").upper()
+        except ValueError:
+            print("Please enter a valid Exam ID")
+            return
 
-        exam = None
-
-        for e in exams:
-            if e["exam_id"] == exam_id:
-                exam = e
-                break
+        exam = fetch_one("""
+            SELECT
+                e.exam_id,
+                e.exam_name,
+                s.subject_name
+            FROM exams e
+            JOIN subjects s
+            ON e.subject_id = s.subject_id
+            WHERE e.exam_id = %s
+        """, (exam_id,))
 
         if not exam:
             print("Invalid Exam ID")
             return
 
-        exam_questions = []
-
-        for q in questions:
-            if q["exam_id"] == exam_id:
-                exam_questions.append(q)
+        exam_questions = fetch_all("""
+            SELECT
+                question_id,
+                question_text,
+                option_a,
+                option_b,
+                option_c,
+                option_d,
+                correct_answer
+            FROM questions
+            WHERE exam_id = %s
+            ORDER BY question_id
+        """, (exam_id,))
 
         if not exam_questions:
             print("No questions available for this exam")
             return
 
         print("\n===== EXAM STARTED =====")
-        print("Exam ID     :", exam["exam_id"])
-        print("Questions   :", len(exam_questions))
-        print("Total Marks :", exam["total_marks"])
-        print("Duration    :", exam["duration"], "minutes")
-
+        print("Exam ID       :", exam[0])
+        print("Exam Name     :", exam[1])
+        print("Subject       :", exam[2])
+        print("Questions     :", len(exam_questions))
+        print("Total Marks   :", len(exam_questions))
         print("---------------------------")
-
-        start_time = time.time()
-        duration = exam["duration"] * 60
 
         answers = {}
 
         for i, q in enumerate(exam_questions, 1):
 
-            elapsed = time.time() - start_time
-            remaining = duration - elapsed
+            print("\nQuestion", i, ":", q[1])
 
-            if remaining <= 0:
-                print("\n===== TIME UP =====")
-                print("Exam time is over!")
-                break
-
-            minutes = int(remaining // 60)
-            seconds = int(remaining % 60)
-
-            print("\nTime Remaining:",
-                  f"{minutes:02d}:{seconds:02d}")
-
-            print("\nQuestion", i, ":", q["question"])
-
-            for option, value in q["options"].items():
-                print(option + ".", value)
+            print("A.", q[2])
+            print("B.", q[3])
+            print("C.", q[4])
+            print("D.", q[5])
 
             while True:
 
@@ -95,7 +127,8 @@ class Student:
                 ).upper()
 
                 if answer in ["A", "B", "C", "D"]:
-                    answers[q["question_id"]] = answer
+
+                    answers[q[0]] = answer
                     break
 
                 print("Please enter A, B, C or D")
@@ -103,14 +136,12 @@ class Student:
         print("\n===== EXAM COMPLETED =====")
 
         score = 0
-        total_marks = 0
+        total_marks = len(exam_questions)
 
         for q in exam_questions:
 
-            total_marks += q.get("marks", 1)
-
-            if answers.get(q["question_id"]) == q["answer"]:
-                score += q.get("marks", 1)
+            if answers.get(q[0]) == q[6]:
+                score += 1
 
         percentage = 0
 
@@ -118,105 +149,144 @@ class Student:
             percentage = (score / total_marks) * 100
 
         print("\n===== RESULT =====")
-        print("Score       :", score)
-        print("Total Marks :", total_marks)
+        print("Score       :", score, "/", total_marks)
         print("Percentage  :", round(percentage, 2), "%")
 
         self.save_result(
             exam_id,
-            score,
-            total_marks,
-            percentage
+            score
         )
 
     # 3. View Latest Result
     def view_results(self):
 
-        results = load_data("data/results.json")
+        student_id = self.get_student_id()
 
-        student_results = []
+        if not student_id:
 
-        for result in results:
-            if result.get("student") == self.username:
-                student_results.append(result)
+            print("\nStudent record not found")
+            return
 
-        if not student_results:
+        result = fetch_one("""
+            SELECT
+                r.exam_id,
+                e.exam_name,
+                r.score,
+                r.exam_date
+            FROM results r
+            JOIN exams e
+            ON r.exam_id = e.exam_id
+            WHERE r.student_id = %s
+            ORDER BY r.result_id DESC
+            LIMIT 1
+        """, (student_id,))
+
+        if not result:
+
             print("\nNo results available")
             return
 
-        result = student_results[-1]
+        total_result = fetch_one("""
+            SELECT COUNT(*)
+            FROM questions
+            WHERE exam_id = %s
+        """, (result[0],))
+
+        total_marks = total_result[0]
+
+        percentage = 0
+
+        if total_marks > 0:
+            percentage = (result[2] / total_marks) * 100
 
         print("\n===== LATEST RESULT =====")
-        print("Exam ID      :", result.get("exam_id"))
-        print(
-            "Score        :",
-            result.get("score"),
-            "/",
-            result.get("total_marks")
-        )
-        print(
-            "Percentage   :",
-            result.get("percentage"),
-            "%"
-        )
+
+        print("Exam ID      :", result[0])
+        print("Exam Name    :", result[1])
+        print("Score        :", result[2], "/", total_marks)
+        print("Percentage   :", round(percentage, 2), "%")
+        print("Exam Date    :", result[3])
+
         print("------------------------")
 
     # 4. Exam History
     def exam_history(self):
 
-        results = load_data("data/results.json")
+        student_id = self.get_student_id()
 
-        student_results = []
+        if not student_id:
 
-        for result in results:
-            if result.get("student") == self.username:
-                student_results.append(result)
+            print("\nStudent record not found")
+            return
 
-        if not student_results:
+        results = fetch_all("""
+            SELECT
+                r.result_id,
+                r.exam_id,
+                e.exam_name,
+                r.score,
+                r.exam_date
+            FROM results r
+            JOIN exams e
+            ON r.exam_id = e.exam_id
+            WHERE r.student_id = %s
+            ORDER BY r.result_id
+        """, (student_id,))
+
+        if not results:
+
             print("\nNo exam history available")
             return
 
         print("\n===== EXAM HISTORY =====")
 
-        for i, result in enumerate(student_results, 1):
+        for i, result in enumerate(results, 1):
+
+            total_result = fetch_one("""
+                SELECT COUNT(*)
+                FROM questions
+                WHERE exam_id = %s
+            """, (result[1],))
+
+            total_marks = total_result[0]
+
+            percentage = 0
+
+            if total_marks > 0:
+                percentage = (result[3] / total_marks) * 100
 
             print("Attempt      :", i)
-            print("Exam ID      :", result.get("exam_id"))
-            print(
-                "Score        :",
-                result.get("score"),
-                "/",
-                result.get("total_marks")
-            )
-            print(
-                "Percentage   :",
-                result.get("percentage"),
-                "%"
-            )
+            print("Exam ID      :", result[1])
+            print("Exam Name    :", result[2])
+            print("Score        :", result[3], "/", total_marks)
+            print("Percentage   :", round(percentage, 2), "%")
+            print("Exam Date    :", result[4])
+
             print("------------------------")
 
     # Save Result
-    def save_result(
-        self,
-        exam_id,
-        score,
-        total_marks,
-        percentage
-    ):
+    def save_result(self, exam_id, score):
 
-        results = load_data("data/results.json")
+        student_id = self.get_student_id()
 
-        result = {
-            "student": self.username,
-            "exam_id": exam_id,
-            "score": score,
-            "total_marks": total_marks,
-            "percentage": round(percentage, 2)
-        }
+        if not student_id:
 
-        results.append(result)
+            print("\nStudent record not found")
+            return
 
-        save_data("data/results.json", results)
+        execute_query("""
+            INSERT INTO results
+            (
+                student_id,
+                exam_id,
+                score
+            )
+            VALUES (%s, %s, %s)
+        """, (
+            student_id,
+            exam_id,
+            score
+        ))
 
         print("\nResult saved successfully!")
 
@@ -228,8 +298,8 @@ class Student:
 def student_menu(user):
 
     username = user.get(
-        "name",
-        user.get("username", "Student")
+        "username",
+        user.get("name", "Student")
     )
 
     student = Student(username)
@@ -269,3 +339,4 @@ def student_menu(user):
         else:
 
             print("\nInvalid choice")
+

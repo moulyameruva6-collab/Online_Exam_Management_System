@@ -1,4 +1,4 @@
-from database import load_data, save_data
+from database import fetch_all, fetch_one, execute_query
 
 
 def admin_menu():
@@ -46,7 +46,16 @@ def admin_menu():
 
 def view_students():
 
-    students = load_data("data/students.json")
+    query = """
+        SELECT
+            s.student_name,
+            u.username
+        FROM students s
+        JOIN users u
+        ON s.user_id = u.user_id
+    """
+
+    students = fetch_all(query)
 
     if not students:
         print("\nNo students available")
@@ -55,8 +64,8 @@ def view_students():
     print("\n--- Students ---")
 
     for student in students:
-        print("Name:", student["name"])
-        print("Username:", student["username"])
+        print("Name:", student[0])
+        print("Username:", student[1])
         print()
 
 
@@ -66,7 +75,17 @@ def view_students():
 
 def view_teachers():
 
-    teachers = load_data("data/teachers.json")
+    query = """
+        SELECT
+            t.teacher_id,
+            t.teacher_name,
+            u.username
+        FROM teachers t
+        JOIN users u
+        ON t.user_id = u.user_id
+    """
+
+    teachers = fetch_all(query)
 
     if not teachers:
         print("\nNo teachers available")
@@ -75,9 +94,33 @@ def view_teachers():
     print("\n--- Teachers ---")
 
     for teacher in teachers:
-        print("Name:", teacher["name"])
-        print("Username:", teacher["username"])
-        print("Subject:", teacher.get("subject", ""))
+
+        teacher_id = teacher[0]
+        teacher_name = teacher[1]
+        username = teacher[2]
+
+        print("Teacher ID:", teacher_id)
+        print("Name:", teacher_name)
+        print("Username:", username)
+
+        # Get assigned subjects
+        subjects = fetch_all(
+            """
+            SELECT subject_name
+            FROM subjects
+            WHERE teacher_id = %s
+            """,
+            (teacher_id,)
+        )
+
+        if subjects:
+            print("Subjects:")
+
+            for subject in subjects:
+                print(" -", subject[0])
+        else:
+            print("Subjects: Not assigned")
+
         print()
 
 
@@ -87,7 +130,20 @@ def view_teachers():
 
 def view_exams():
 
-    exams = load_data("data/exams.json")
+    query = """
+        SELECT
+            e.exam_id,
+            e.exam_name,
+            s.subject_name,
+            t.teacher_name
+        FROM exams e
+        JOIN subjects s
+        ON e.subject_id = s.subject_id
+        JOIN teachers t
+        ON e.teacher_id = t.teacher_id
+    """
+
+    exams = fetch_all(query)
 
     if not exams:
         print("\nNo exams available")
@@ -97,11 +153,29 @@ def view_exams():
 
     for exam in exams:
 
-        print("Exam:", exam["exam_name"])
-        print("Exam ID:", exam["exam_id"])
-        print("Subject:", exam.get("subject", ""))
-        print("Teacher:", exam.get("teacher", ""))
-        print("Duration:", exam.get("duration", 0), "minutes")
+        exam_id = exam[0]
+        exam_name = exam[1]
+        subject_name = exam[2]
+        teacher_name = exam[3]
+
+        # Count questions
+        question_count = fetch_one(
+            """
+            SELECT COUNT(*)
+            FROM questions
+            WHERE exam_id = %s
+            """,
+            (exam_id,)
+        )
+
+        total_questions = question_count[0]
+
+        print("Exam ID:", exam_id)
+        print("Exam Name:", exam_name)
+        print("Subject:", subject_name)
+        print("Teacher:", teacher_name)
+        print("Questions:", total_questions)
+        print("Total Marks:", total_questions)
         print()
 
 
@@ -111,7 +185,25 @@ def view_exams():
 
 def view_results():
 
-    results = load_data("data/results.json")
+    query = """
+        SELECT
+            u.username,
+            s.student_name,
+            r.exam_id,
+            e.exam_name,
+            r.score,
+            r.exam_date
+        FROM results r
+        JOIN students s
+        ON r.student_id = s.student_id
+        JOIN users u
+        ON s.user_id = u.user_id
+        JOIN exams e
+        ON r.exam_id = e.exam_id
+        ORDER BY r.exam_date DESC
+    """
+
+    results = fetch_all(query)
 
     if not results:
         print("\nNo results available")
@@ -120,11 +212,41 @@ def view_results():
     print("\n--- Results ---")
 
     for result in results:
-        print("Student:", result.get("username", result.get("student", "Unknown")))
-        print("Exam ID:", result.get("exam_id", ""))
-        print("Score:", result.get("score", 0), "/", result.get("total_marks", 0))
-        print("Percentage:", result.get("percentage", 0), "%")
+
+        username = result[0]
+        student_name = result[1]
+        exam_id = result[2]
+        exam_name = result[3]
+        score = result[4]
+        exam_date = result[5]
+
+        # Calculate total marks
+        total = fetch_one(
+            """
+            SELECT COUNT(*)
+            FROM questions
+            WHERE exam_id = %s
+            """,
+            (exam_id,)
+        )
+
+        total_marks = total[0]
+
+        # Calculate percentage
+        percentage = 0
+
+        if total_marks > 0:
+            percentage = (score / total_marks) * 100
+
+        print("Student:", student_name)
+        print("Username:", username)
+        print("Exam ID:", exam_id)
+        print("Exam Name:", exam_name)
+        print("Score:", score, "/", total_marks)
+        print("Percentage:", round(percentage, 2), "%")
+        print("Exam Date:", exam_date)
         print()
+
 
 # ==================================
 # ASSIGN SUBJECT
@@ -132,7 +254,18 @@ def view_results():
 
 def assign_subject():
 
-    teachers = load_data("data/teachers.json")
+    # Get teachers
+    query = """
+        SELECT
+            t.teacher_id,
+            t.teacher_name,
+            u.username
+        FROM teachers t
+        JOIN users u
+        ON t.user_id = u.user_id
+    """
+
+    teachers = fetch_all(query)
 
     if not teachers:
         print("\nNo teachers available")
@@ -141,34 +274,72 @@ def assign_subject():
     print("\n--- Teachers ---")
 
     for i, teacher in enumerate(teachers, 1):
-        print(i, teacher["name"], "-", teacher.get("subject", ""))
+
+        print(
+            i,
+            teacher[1],
+            "-",
+            teacher[2]
+        )
 
     try:
         number = int(input("Enter teacher number: "))
+
+        if number < 1 or number > len(teachers):
+            print("Invalid teacher number")
+            return
+
         teacher = teachers[number - 1]
-    except (ValueError, IndexError):
-        print("Invalid teacher number")
+
+    except ValueError:
+        print("Please enter a number")
         return
 
-    subject = input("Enter subject: ").strip()
+    teacher_id = teacher[0]
 
-    if not subject:
+    subject_name = input("Enter subject: ").strip()
+
+    if not subject_name:
         print("Subject cannot be empty")
         return
 
-    teacher["subject"] = subject
+    # Check if subject already exists
+    existing_subject = fetch_one(
+        """
+        SELECT subject_id
+        FROM subjects
+        WHERE LOWER(subject_name) = LOWER(%s)
+        """,
+        (subject_name,)
+    )
 
-    save_data("data/teachers.json", teachers)
+    if existing_subject:
 
-    # Update subject in users.json also
-    users = load_data("data/users.json")
+        subject_id = existing_subject[0]
 
-    for user in users:
+        # Assign existing subject to teacher
+        execute_query(
+            """
+            UPDATE subjects
+            SET teacher_id = %s
+            WHERE subject_id = %s
+            """,
+            (teacher_id, subject_id)
+        )
 
-        if user["username"].lower() == teacher["username"].lower():
-            user["subject"] = subject
-            break
+    else:
 
-    save_data("data/users.json", users)
+        # Create new subject
+        execute_query(
+            """
+            INSERT INTO subjects
+            (subject_name, teacher_id)
+            VALUES (%s, %s)
+            """,
+            (subject_name, teacher_id)
+        )
 
     print("Subject assigned successfully!")
+
+
+

@@ -1,14 +1,17 @@
-from database import load_data, save_data
+from database import fetch_all, fetch_one, execute_query
 
 
-# ==============================
-# ADD QUESTION
-# ==============================
+# ==========================================
+# 1. ADD QUESTION
+# ==========================================
 
 def add_question():
 
-    questions = load_data("data/questions.json")
-    exams = load_data("data/exams.json")
+    exams = fetch_all("""
+        SELECT exam_id, exam_name
+        FROM exams
+        ORDER BY exam_id
+    """)
 
     if not exams:
         print("No exams available")
@@ -17,20 +20,29 @@ def add_question():
     print("\n--- Exams ---")
 
     for i, exam in enumerate(exams, 1):
-        print(i, exam["exam_id"], "-", exam["exam_name"])
+        print(i, "-", exam[1])
 
     try:
         number = int(input("Enter exam number: "))
-        exam = exams[number - 1]
-    except (ValueError, IndexError):
+    except ValueError:
+        print("Please enter a number")
+        return
+
+    if number < 1 or number > len(exams):
         print("Invalid exam number")
         return
 
-    question = input("Enter question: ")
-    a = input("Enter option A: ")
-    b = input("Enter option B: ")
-    c = input("Enter option C: ")
-    d = input("Enter option D: ")
+    exam_id = exams[number - 1][0]
+
+    question = input("Enter question: ").strip()
+    a = input("Enter option A: ").strip()
+    b = input("Enter option B: ").strip()
+    c = input("Enter option C: ").strip()
+    d = input("Enter option D: ").strip()
+
+    if not question:
+        print("Question cannot be empty")
+        return
 
     while True:
 
@@ -43,58 +55,50 @@ def add_question():
 
         print("Enter A, B, C or D")
 
-    question_id = 1
-
-    if questions:
-        question_id = max(
-            q["question_id"] for q in questions
-        ) + 1
-
-    new_question = {
-        "exam_id": exam["exam_id"],
-        "question_id": question_id,
-        "question": question,
-        "options": {
-            "A": a,
-            "B": b,
-            "C": c,
-            "D": d
-        },
-        "answer": answer,
-        "marks": 1
-    }
-
-    questions.append(new_question)
-
-    save_data(
-        "data/questions.json",
-        questions
-    )
-
-    # Update total marks
-    total = 0
-
-    for q in questions:
-        if q["exam_id"] == exam["exam_id"]:
-            total += q["marks"]
-
-    exam["total_marks"] = total
-
-    save_data(
-        "data/exams.json",
-        exams
-    )
+    execute_query("""
+        INSERT INTO questions
+        (
+            exam_id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_answer
+        )
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (
+        exam_id,
+        question,
+        a,
+        b,
+        c,
+        d,
+        answer
+    ))
 
     print("Question added successfully!")
 
 
-# ==============================
-# VIEW QUESTIONS
-# ==============================
+# ==========================================
+# 2. VIEW QUESTIONS
+# ==========================================
 
 def view_questions():
 
-    questions = load_data("data/questions.json")
+    questions = fetch_all("""
+        SELECT
+            question_id,
+            exam_id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_answer
+        FROM questions
+        ORDER BY question_id
+    """)
 
     if not questions:
         print("No questions available")
@@ -103,28 +107,79 @@ def view_questions():
     for i, q in enumerate(questions, 1):
 
         print("\nQuestion No:", i)
-        print("Exam ID:", q["exam_id"])
-        print("Question:", q["question"])
+        print("Question ID:", q[0])
+        print("Exam ID:", q[1])
+        print("Question:", q[2])
+        print("A.", q[3])
+        print("B.", q[4])
+        print("C.", q[5])
+        print("D.", q[6])
+        print("Answer:", q[7])
 
-        for option, value in q["options"].items():
-            print(option + ".", value)
 
-        print("Answer:", q["answer"])
-
-
-# ==============================
-# DELETE QUESTION
-# ==============================
+# ==========================================
+# 3. DELETE QUESTION
+# ==========================================
 
 def delete_question():
 
-    questions = load_data("data/questions.json")
+    exams = fetch_all("""
+        SELECT exam_id, exam_name
+        FROM exams
+        ORDER BY exam_id
+    """)
 
-    if not questions:
-        print("No questions available")
+    if not exams:
+        print("No exams available")
         return
 
-    view_questions()
+    print("\n--- Exams ---")
+
+    for i, exam in enumerate(exams, 1):
+        print(i, "-", exam[1])
+
+    try:
+        exam_number = int(input("Enter exam number: "))
+    except ValueError:
+        print("Please enter a number")
+        return
+
+    if exam_number < 1 or exam_number > len(exams):
+        print("Invalid exam number")
+        return
+
+    exam_id = exams[exam_number - 1][0]
+
+    questions = fetch_all("""
+        SELECT
+            question_id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_answer
+        FROM questions
+        WHERE exam_id = %s
+        ORDER BY question_id
+    """, (exam_id,))
+
+    if not questions:
+        print("No questions available for this exam")
+        return
+
+    print("\n--- Exam Questions ---")
+
+    for i, q in enumerate(questions, 1):
+
+        print("\nQuestion No:", i)
+        print("Question ID:", q[0])
+        print("Question:", q[1])
+        print("A.", q[2])
+        print("B.", q[3])
+        print("C.", q[4])
+        print("D.", q[5])
+        print("Answer:", q[6])
 
     try:
         number = int(
@@ -138,53 +193,81 @@ def delete_question():
         print("Invalid question number")
         return
 
-    exam_id = questions[number - 1]["exam_id"]
+    question_id = questions[number - 1][0]
 
-    questions.pop(number - 1)
-
-    save_data(
-        "data/questions.json",
-        questions
-    )
-
-    # Update total marks
-    exams = load_data("data/exams.json")
-
-    for exam in exams:
-
-        if exam["exam_id"] == exam_id:
-
-            total = 0
-
-            for q in questions:
-                if q["exam_id"] == exam_id:
-                    total += q["marks"]
-
-            exam["total_marks"] = total
-
-            break
-
-    save_data(
-        "data/exams.json",
-        exams
-    )
+    execute_query("""
+        DELETE FROM questions
+        WHERE question_id = %s
+    """, (question_id,))
 
     print("Question deleted successfully!")
 
 
-# ==============================
-# UPDATE QUESTION
-# ==============================
+# ==========================================
+# 4. UPDATE QUESTION
+# ==========================================
 
 def update_question():
 
-    questions = load_data("data/questions.json")
+    exams = fetch_all("""
+        SELECT exam_id, exam_name
+        FROM exams
+        ORDER BY exam_id
+    """)
 
-    if not questions:
-        print("No questions available")
+    if not exams:
+        print("No exams available")
         return
 
-    view_questions()
+    print("\n--- Exams ---")
+
+    for i, exam in enumerate(exams, 1):
+        print(i, "-", exam[1])
+
+    try:
+        exam_number = int(
+            input("Enter exam number: ")
+        )
+    except ValueError:
+        print("Please enter a number")
+        return
+
+    if exam_number < 1 or exam_number > len(exams):
+        print("Invalid exam number")
+        return
+
+    exam_id = exams[exam_number - 1][0]
+
+    questions = fetch_all("""
+        SELECT
+            question_id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_answer
+        FROM questions
+        WHERE exam_id = %s
+        ORDER BY question_id
+    """, (exam_id,))
+
+    if not questions:
+        print("No questions available for this exam")
+        return
+
+    print("\n--- Exam Questions ---")
+
+    for i, q in enumerate(questions, 1):
+
+        print("\nQuestion No:", i)
+        print("Question ID:", q[0])
+        print("Question:", q[1])
+        print("A.", q[2])
+        print("B.", q[3])
+        print("C.", q[4])
+        print("D.", q[5])
+        print("Answer:", q[6])
 
     try:
         number = int(
@@ -198,15 +281,19 @@ def update_question():
         print("Invalid question number")
         return
 
-    q = questions[number - 1]
+    question_id = questions[number - 1][0]
 
     print("\nEnter new details")
 
-    q["question"] = input("Enter question: ")
-    q["options"]["A"] = input("Enter option A: ")
-    q["options"]["B"] = input("Enter option B: ")
-    q["options"]["C"] = input("Enter option C: ")
-    q["options"]["D"] = input("Enter option D: ")
+    question = input("Enter question: ").strip()
+    a = input("Enter option A: ").strip()
+    b = input("Enter option B: ").strip()
+    c = input("Enter option C: ").strip()
+    d = input("Enter option D: ").strip()
+
+    if not question:
+        print("Question cannot be empty")
+        return
 
     while True:
 
@@ -215,26 +302,52 @@ def update_question():
         ).upper()
 
         if answer in ["A", "B", "C", "D"]:
-            q["answer"] = answer
             break
 
         print("Enter A, B, C or D")
 
-    save_data(
-        "data/questions.json",
-        questions
-    )
+    execute_query("""
+        UPDATE questions
+        SET
+            question_text = %s,
+            option_a = %s,
+            option_b = %s,
+            option_c = %s,
+            option_d = %s,
+            correct_answer = %s
+        WHERE question_id = %s
+        AND exam_id = %s
+    """, (
+        question,
+        a,
+        b,
+        c,
+        d,
+        answer,
+        question_id,
+        exam_id
+    ))
 
     print("Question updated successfully!")
 
 
-# ==============================
-# SEARCH QUESTION
-# ==============================
+# ==========================================
+# 5. SEARCH QUESTION
+# ==========================================
 
 def search_question():
 
-    questions = load_data("data/questions.json")
+    questions = fetch_all("""
+        SELECT
+            question_id,
+            exam_id,
+            question_text,
+            option_a,
+            option_b,
+            option_c,
+            option_d
+        FROM questions
+    """)
 
     if not questions:
         print("No questions available")
@@ -250,13 +363,15 @@ def search_question():
 
     for q in questions:
 
-        if keyword in q["question"].lower():
+        if keyword in q[2].lower():
 
-            print("\nExam ID:", q["exam_id"])
-            print("Question:", q["question"])
-
-            for option, value in q["options"].items():
-                print(option + ".", value)
+            print("\nQuestion ID:", q[0])
+            print("Exam ID:", q[1])
+            print("Question:", q[2])
+            print("A.", q[3])
+            print("B.", q[4])
+            print("C.", q[5])
+            print("D.", q[6])
 
             found = True
 
@@ -264,14 +379,17 @@ def search_question():
         print("No questions found")
 
 
-# ==============================
-# QUESTION COUNT
-# ==============================
+# ==========================================
+# 6. QUESTION COUNT
+# ==========================================
 
 def question_count():
 
-    questions = load_data("data/questions.json")
-    exams = load_data("data/exams.json")
+    exams = fetch_all("""
+        SELECT exam_id, exam_name
+        FROM exams
+        ORDER BY exam_id
+    """)
 
     if not exams:
         print("No exams available")
@@ -281,15 +399,22 @@ def question_count():
 
     for exam in exams:
 
-        count = 0
+        result = fetch_one("""
+            SELECT COUNT(*)
+            FROM questions
+            WHERE exam_id = %s
+        """, (exam[0],))
 
-        for q in questions:
-            if q["exam_id"] == exam["exam_id"]:
-                count += 1
+        count = result[0]
 
         print(
-            exam["exam_name"],
+            exam[1],
             "->",
             count,
             "questions"
         )
+
+
+
+
+
